@@ -77,9 +77,17 @@ IRQ_RX_TIME_OUT_MASK = const(0x80)
 MAX_PKT_LENGTH = const(255)
 
 # pass in non-default parameters for any/all options in the constructor parameters argument
-DEFAULT_PARAMETERS = {'frequency': 915E6, 'tx_power_level': 2, 'signal_bandwidth': 125E3,
-                      'spreading_factor': 7, 'coding_rate': 5, 'preamble_length': 8,
-                      'implicitHeader': False, 'sync_word': 0x12, 'enable_CRC': False}
+DEFAULT_PARAMETERS = {
+    'frequency': 915E6,
+    'tx_power_level': 5,
+    'signal_bandwidth': 125E3,
+    'spreading_factor': 7,
+    'coding_rate': 5,
+    'preamble_length': 8,
+    'implicitHeader': False,
+    'sync_word': 0x12,
+    'enable_CRC': True,
+}
 
 REQUIRED_VERSION = const(0x12)
 
@@ -87,7 +95,6 @@ class SX127x:
     ''' Standard SX127x library. Requires an spicontrol.SpiControl instance for spiControl '''
     def __init__(self,
                  name='SX127x',
-                 parameters={},
                  onReceive=None,
                  onTransmit=None,
                  spiControl=None,
@@ -95,7 +102,7 @@ class SX127x:
 
         self.name = name
         self.parameters = dict(DEFAULT_PARAMETERS)
-        self.parameters.update(parameters)
+        self.parameters.update(kwargs)
         self._onReceive = onReceive  # the onreceive function
         self._onTransmit = onTransmit   # the ontransmit function
         self.doAcquire = hasattr(_thread, 'allocate_lock') # micropython vs loboris

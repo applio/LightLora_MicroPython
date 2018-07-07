@@ -35,15 +35,8 @@ class LoraUtil:
         # init spi
         self.spic = spicontrol.SpiControl(**kwargs)
         # init lora
-        params = {
-            'tx_power_level': 5,
-            'signal_bandwidth': 125E3,
-            'spreading_factor': 7,
-            'coding_rate': 5,
-            'enable_CRC': True,
-        }
-        self.lora = sx127x.SX127x(spiControl=self.spic, parameters=params, **kwargs)
-        self.spic.initLoraPins() # init pins
+        self.lora = sx127x.SX127x(spiControl=self.spic, **kwargs)
+        self.spic.initLoraPins()
         self.lora.init()
         self.lora.onReceive(self._doReceive)
         self.lora.onTransmit(self._doTransmit)
