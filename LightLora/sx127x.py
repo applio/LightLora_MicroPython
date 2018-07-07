@@ -13,74 +13,75 @@ Communications is handled by an SpiControl object wrapping SPI
 import gc
 import _thread
 from machine import Pin
+from micropython import const
 
-PA_OUTPUT_RFO_PIN = 0
-PA_OUTPUT_PA_BOOST_PIN = 1
+PA_OUTPUT_RFO_PIN = const(0)
+PA_OUTPUT_PA_BOOST_PIN = const(1)
 
 # registers
-REG_FIFO = 0x00
-REG_OP_MODE = 0x01
-REG_FRF_MSB = 0x06
-REG_FRF_MID = 0x07
-REG_FRF_LSB = 0x08
-REG_PA_CONFIG = 0x09
-REG_LNA = 0x0c
-REG_FIFO_ADDR_PTR = 0x0d
+REG_FIFO = const(0x00)
+REG_OP_MODE = const(0x01)
+REG_FRF_MSB = const(0x06)
+REG_FRF_MID = const(0x07)
+REG_FRF_LSB = const(0x08)
+REG_PA_CONFIG = const(0x09)
+REG_LNA = const(0x0c)
+REG_FIFO_ADDR_PTR = const(0x0d)
 
-REG_FIFO_TX_BASE_ADDR = 0x0e
-FifoTxBaseAddr = 0x00
+REG_FIFO_TX_BASE_ADDR = const(0x0e)
+FifoTxBaseAddr = const(0x00)
 # FifoTxBaseAddr = 0x80
 
-REG_FIFO_RX_BASE_ADDR = 0x0f
-FifoRxBaseAddr = 0x00
-REG_FIFO_RX_CURRENT_ADDR = 0x10
-REG_IRQ_FLAGS_MASK = 0x11
-REG_IRQ_FLAGS = 0x12
-REG_RX_NB_BYTES = 0x13
-REG_PKT_RSSI_VALUE = 0x1a
-REG_PKT_SNR_VALUE = 0x1b
-REG_MODEM_CONFIG_1 = 0x1d
-REG_MODEM_CONFIG_2 = 0x1e
-REG_PREAMBLE_MSB = 0x20
-REG_PREAMBLE_LSB = 0x21
-REG_PAYLOAD_LENGTH = 0x22
-REG_FIFO_RX_BYTE_ADDR = 0x25
-REG_MODEM_CONFIG_3 = 0x26
-REG_RSSI_WIDEBAND = 0x2c
-REG_DETECTION_OPTIMIZE = 0x31
-REG_DETECTION_THRESHOLD = 0x37
-REG_SYNC_WORD = 0x39
-REG_DIO_MAPPING_1 = 0x40
-REG_VERSION = 0x42
+REG_FIFO_RX_BASE_ADDR = const(0x0f)
+FifoRxBaseAddr = const(0x00)
+REG_FIFO_RX_CURRENT_ADDR = const(0x10)
+REG_IRQ_FLAGS_MASK = const(0x11)
+REG_IRQ_FLAGS = const(0x12)
+REG_RX_NB_BYTES = const(0x13)
+REG_PKT_RSSI_VALUE = const(0x1a)
+REG_PKT_SNR_VALUE = const(0x1b)
+REG_MODEM_CONFIG_1 = const(0x1d)
+REG_MODEM_CONFIG_2 = const(0x1e)
+REG_PREAMBLE_MSB = const(0x20)
+REG_PREAMBLE_LSB = const(0x21)
+REG_PAYLOAD_LENGTH = const(0x22)
+REG_FIFO_RX_BYTE_ADDR = const(0x25)
+REG_MODEM_CONFIG_3 = const(0x26)
+REG_RSSI_WIDEBAND = const(0x2c)
+REG_DETECTION_OPTIMIZE = const(0x31)
+REG_DETECTION_THRESHOLD = const(0x37)
+REG_SYNC_WORD = const(0x39)
+REG_DIO_MAPPING_1 = const(0x40)
+REG_VERSION = const(0x42)
 
 # modes
-MODE_LONG_RANGE_MODE = 0x80  # bit 7: 1 => LoRa mode
-MODE_SLEEP = 0x00
-MODE_STDBY = 0x01
-MODE_TX = 0x03
-MODE_RX_CONTINUOUS = 0x05
+MODE_LONG_RANGE_MODE = const(0x80)  # bit 7: 1 => LoRa mode
+MODE_SLEEP = const(0x00)
+MODE_STDBY = const(0x01)
+MODE_TX = const(0x03)
+MODE_RX_CONTINUOUS = const(0x05)
 # MODE_RX_SINGLE = 0x06
 # 6 is not supported on the 1276
-MODE_RX_SINGLE = 0x05
+MODE_RX_SINGLE = const(0x05)
 
 # PA config
-PA_BOOST = 0x80
+PA_BOOST = const(0x80)
 
 # IRQ masks
-IRQ_TX_DONE_MASK = 0x08
-IRQ_PAYLOAD_CRC_ERROR_MASK = 0x20
-IRQ_RX_DONE_MASK = 0x40
-IRQ_RX_TIME_OUT_MASK = 0x80
+IRQ_TX_DONE_MASK = const(0x08)
+IRQ_PAYLOAD_CRC_ERROR_MASK = const(0x20)
+IRQ_RX_DONE_MASK = const(0x40)
+IRQ_RX_TIME_OUT_MASK = const(0x80)
 
 # Buffer size
-MAX_PKT_LENGTH = 255
+MAX_PKT_LENGTH = const(255)
 
 # pass in non-default parameters for any/all options in the constructor parameters argument
 DEFAULT_PARAMETERS = {'frequency': 915E6, 'tx_power_level': 2, 'signal_bandwidth': 125E3,
                       'spreading_factor': 7, 'coding_rate': 5, 'preamble_length': 8,
                       'implicitHeader': False, 'sync_word': 0x12, 'enable_CRC': False}
 
-REQUIRED_VERSION = 0x12
+REQUIRED_VERSION = const(0x12)
 
 class SX127x:
     ''' Standard SX127x library. Requires an spicontrol.SpiControl instance for spiControl '''
@@ -93,7 +94,8 @@ class SX127x:
                  **kwargs):
 
         self.name = name
-        self.parameters = parameters
+        self.parameters = dict(DEFAULT_PARAMETERS)
+        self.parameters.update(parameters)
         self._onReceive = onReceive  # the onreceive function
         self._onTransmit = onTransmit   # the ontransmit function
         self.doAcquire = hasattr(_thread, 'allocate_lock') # micropython vs loboris
@@ -104,23 +106,19 @@ class SX127x:
         self._spiControl = spiControl   # the spi wrapper - see spicontrol.py
         self.irqPin = spiControl.getIrqPin() # a way to need loracontrol only in spicontrol
 
-    # if we passed in a param use it, else use default
-    def _useParam(self, who):
-        return DEFAULT_PARAMETERS[who] if not who in self.parameters.keys() else self.parameters[who]
-
     def init(self):
         # check version
         version = self.readRegister(REG_VERSION)
         if version != REQUIRED_VERSION:
-            print("Detected version:", version)
-            raise Exception('Invalid version.')
+            raise Exception('Unsupported version found: %r' % version)
 
         # put in LoRa and sleep mode
         self.sleep()
 
         # config
-        self.setFrequency(self._useParam('frequency'))
-        self.setSignalBandwidth(self._useParam('signal_bandwidth'))
+        _parameters = self.parameters  # local var to avoid repeated dot-lookup
+        self.setFrequency(_parameters['frequency'])
+        self.setSignalBandwidth(_parameters['signal_bandwidth'])
 
         # set LNA boost
         self.writeRegister(REG_LNA, self.readRegister(REG_LNA) | 0x03)
@@ -128,14 +126,14 @@ class SX127x:
         # set auto AGC
         self.writeRegister(REG_MODEM_CONFIG_3, 0x04)
 
-        self.setTxPower(self._useParam('tx_power_level'))
+        self.setTxPower(_parameters['tx_power_level'])
         self._implicitHeaderMode = None
-        self.implicitHeaderMode(self._useParam('implicitHeader'))
-        self.setSpreadingFactor(self._useParam('spreading_factor'))
-        self.setCodingRate(self._useParam('coding_rate'))
-        self.setPreambleLength(self._useParam('preamble_length'))
-        self.setSyncWord(self._useParam('sync_word'))
-        self.enableCRC(self._useParam('enable_CRC'))
+        self.implicitHeaderMode(_parameters['implicitHeader'])
+        self.setSpreadingFactor(_parameters['spreading_factor'])
+        self.setCodingRate(_parameters['coding_rate'])
+        self.setPreambleLength(_parameters['preamble_length'])
+        self.setSyncWord(_parameters['sync_word'])
+        self.enableCRC(_parameters['enable_CRC'])
 
         # set base addresses
         self.writeRegister(REG_FIFO_TX_BASE_ADDR, FifoTxBaseAddr)
