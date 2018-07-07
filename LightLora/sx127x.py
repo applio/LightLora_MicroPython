@@ -260,12 +260,12 @@ class SX127x:
         self.writeRegister(REG_MODEM_CONFIG_2, (self.readRegister(REG_MODEM_CONFIG_2) & 0x0f) | ((sf << 4) & 0xf0))
 
     def setSignalBandwidth(self, sbw):
-        bins = (7.8E3, 10.4E3, 15.6E3, 20.8E3, 31.25E3, 41.7E3, 62.5E3, 125E3, 250E3)
-        bw = 9
-        for i in range(len(bins)):
-            if sbw <= bins[i]:
-                bw = i
+        bins = (7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000)
+        for bw, cutoff in enumerate(bins):
+            if sbw <= cutoff:
                 break
+        else:
+            bw = 9
         self.writeRegister(REG_MODEM_CONFIG_1, (self.readRegister(REG_MODEM_CONFIG_1) & 0x0f) | (bw << 4))
 
     def setCodingRate(self, denominator):
