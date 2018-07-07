@@ -1,6 +1,6 @@
 "Provides lightweight management for sx1276 chips"
 
-from time import sleep
+from utime import sleep_ms
 from LightLora import spicontrol, sx127x
 
 
@@ -36,7 +36,7 @@ class LoraUtil:
         self.spic = spicontrol.SpiControl(**kwargs)
         # init lora
         self.lora = sx127x.SX127x(spiControl=self.spic, **kwargs)
-        self.spic.initLoraPins()
+        self.spic.init_lora_pins()
         self.lora.init()
         self.lora.onReceive(self._doReceive)
         self.lora.onTransmit(self._doTransmit)
@@ -83,7 +83,7 @@ class LoraUtil:
             self.lora.endPacket()
             slt = 0
             while (not self.doneTransmit) and (slt < 50):
-                sleep(.1)
+                sleep_ms(100)
                 slt = slt + 1
             if slt == 50:
                 print("Transmit timeout")

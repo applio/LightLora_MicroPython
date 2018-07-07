@@ -1,13 +1,14 @@
-from time import sleep
+from utime import sleep_ms
 from machine import Pin, SPI
+from micropython import const
 
-# Pin assignments for SPI and LoRa board
-PIN_ID_SCK = 2           # GPIO2  / esp pin 24
-PIN_ID_MISO = 4          # GPIO4  / esp pin 26
-PIN_ID_MOSI = 12         # GPIO12 / esp pin 14
-PIN_ID_LORA_DIO0 = 15    # GPIO15 / esp pin 23
-PIN_ID_LORA_SS = 14      # GPIO14 / esp pin 13
-PIN_ID_LORA_RESET = 27   # GPIO27 / esp pin 12
+# Default pin assignments for SPI and LoRa board
+PIN_ID_SCK = const(2)           # GPIO2
+PIN_ID_MISO = const(4)          # GPIO4
+PIN_ID_MOSI = const(12)         # GPIO12
+PIN_ID_LORA_DIO0 = const(15)    # GPIO15
+PIN_ID_LORA_SS = const(14)      # GPIO14
+PIN_ID_LORA_RESET = const(27)   # GPIO27
 
 # loraconfig is the project definition for pins <-> hardware
 
@@ -21,7 +22,8 @@ class SpiControl:
                  pin_id_lora_dio0=PIN_ID_LORA_DIO0,
                  pin_id_lora_ss=PIN_ID_LORA_SS,
                  pin_id_lora_reset=PIN_ID_LORA_RESET,
-                 baudrate=5000000):
+                 baudrate=5000000,
+                 **kwargs):
         self.spi = SPI(
                 1,
                 baudrate=baudrate,
@@ -37,6 +39,8 @@ class SpiControl:
         self.pinrst = Pin(pin_id_lora_reset, Pin.OUT)
         self.pin_id_lora_dio0 = pin_id_lora_dio0
 
+
+
     # sx127x transfer is always write 2 bytes while reading the second byte
     # a read doesn't write the second byte. a write returns the prior value
     # write register # = 0x80 | read register #
@@ -51,19 +55,16 @@ class SpiControl:
         self.pinss.value(1)
         return response
 
-    # this doesn't belong here but it doesn't really belong anywhere, so put
-    # it with the other loraconfig-ed stuff
-    def getIrqPin(self):
-        irqPin = Pin(self.pin_id_lora_dio0, Pin.IN)
-        return irqPin
+    def get_irq_pin(self):
+        "Get handle on a machine.Pin() for the LoRa's DIO0."
+        irq_pin = Pin(self.pin_id_lora_dio0, Pin.IN)
+        return irq_pin
 
-    # this doesn't belong here but it doesn't really belong anywhere, so put
-    # it with the other loraconfig-ed stuff
-    def initLoraPins(self):
-        "Initialize the pins for the LoRa device."
+    def init_lora_pins(self):
+        "Initialize the pins for the LoRa device after instantiation of SX127x."
         self.pinss.value(1)     # initialize CS to high (off)
         self.pinrst.value(1)    # do a reset pulse
-        sleep(.01)
+        sleep_ms(10)
         self.pinrst.value(0)
-        sleep(.01)
+        sleep_ms(10)
         self.pinrst.value(1)

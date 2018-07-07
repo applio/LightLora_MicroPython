@@ -78,9 +78,9 @@ MAX_PKT_LENGTH = const(255)
 
 # pass in non-default parameters for any/all options in the constructor parameters argument
 DEFAULT_PARAMETERS = {
-    'frequency': 915E6,
+    'frequency': 915000000,
     'tx_power_level': 5,
-    'signal_bandwidth': 125E3,
+    'signal_bandwidth': 125000,
     'spreading_factor': 7,
     'coding_rate': 5,
     'preamble_length': 8,
@@ -111,7 +111,7 @@ class SX127x:
         else :
             self._lock = True
         self._spiControl = spiControl   # the spi wrapper - see spicontrol.py
-        self.irqPin = spiControl.getIrqPin() # a way to need loracontrol only in spicontrol
+        self.irqPin = spiControl.get_irq_pin() # a way to need loracontrol only in spicontrol
 
     def init(self):
         # check version
