@@ -20,23 +20,23 @@ lru = lorautil.LoraUtil()
 ```
 During the loop you can
 ```python
-if lru.isPacketAvailable():
-	pkt = lru.readPacket()
-	print(pkt.msgTxt)
+if lru.is_packet_available():
+	pkt = lru.read_packet()
+	print(pkt.msg_txt)
 ...
 txt = "Hello World"
-lru.sendPacket(0xff, 0x11, txt.encode()) # random dst, src at
+lru.send_packet(0xff, 0x11, txt.encode()) # Conveys src, dst, payload
 ```
 
-The packet definition is:
+The packet instances offer the following attributes:
 ```python
 class LoraPacket:
 	def __init__(self):
-		self.srcAddress = None
-		self.dstAddress = None
-		self.srcLineCount = None
-		self.payLength = None
-		self.msgTxt = None
+		self.src_address = None
+		self.dst_address = None
+		self.src_line_count = None
+		self.pay_length = None
+		self.msg_txt = None
 		self.rssi = None
 		self.snr = None
 ```
@@ -45,5 +45,5 @@ Customization
 ---
 The ports for the LoRa device are set in spicontrol.py for now.
 
-The `_doTransmit` and `_doReceive` methods in lorautil.LoraUtil are the callbacks on interrupt.
+The `_do_transmit` and `_do_receive` methods in lorautil.LoraUtil are the callbacks on interrupt.
 

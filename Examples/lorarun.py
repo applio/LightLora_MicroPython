@@ -1,4 +1,4 @@
-import time
+import utime
 from LightLora import lorautil
 # a really ugly example using the LightLora micropython library
 # do:
@@ -8,26 +8,26 @@ from LightLora import lorautil
 # this ping-pongs fully with the Arduino LightLora example
 def doreader():
 	lr = lorautil.LoraUtil()	# the LoraUtil object
-	endt = time.time() + 2
-	startTime = time.time()
+	endt = utime.time() + 2
+	startTime = utime.time()
 	ctr = 0
 	while True:
-		if lr.isPacketAvailable():
+		if lr.is_packet_available():
 			packet = None
 			try:
-				packet = lr.readPacket()
-				if packet and packet.msgTxt:
-					txt = packet.msgTxt
-					lr.sendPacket(0xff, 0x41, (txt + str(ctr)).encode())
-					endt = time.time() + 4
-					etime = str(int(time.time() - startTime))
+				packet = lr.read_packet()
+				if packet and packet.msg_txt:
+					txt = packet.msg_txt
+					lr.send_packet(0xff, 0x41, (txt + str(ctr)).encode())
+					endt = utime.time() + 4
+					etime = str(int(utime.time() - startTime))
 					print("@" + etime + "r=" + str(txt))
 				ctr = ctr + 1
 			except Exception as ex:
 				print(str(ex))
-		if time.time() > endt:
-			lr.sendPacket(0xff, 0x41, ('P Lora' + str(ctr)).encode())
+		if utime.time() > endt:
+			lr.send_packet(0xff, 0x41, ('P Lora' + str(ctr)).encode())
 			ctr = ctr + 1
-			endt = time.time() + 4
+			endt = utime.time() + 4
 		else:
-			time.sleep_ms(50)
+			utime.sleep_ms(50)
