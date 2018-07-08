@@ -30,4 +30,4 @@ def doreader():
 			ctr = ctr + 1
 			endt = time.time() + 4
 		else:
-			time.sleep(.05)
+			time.sleep_ms(50)
