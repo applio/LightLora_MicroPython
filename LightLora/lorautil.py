@@ -67,7 +67,7 @@ class LoraUtil:
         "Write an int (generally as a 2-byte) using the LoRa driver."
         self.lora.write(bytearray([value]))
 
-    def send_packet(self, src_address, dst_address, outGoing):
+    def send_packet(self, src_address, dst_address, outgoing_payload):
         "Send a packet of header info and a bytearray to dst_address."
         try:
             self.linecounter = self.linecounter + 1
@@ -76,8 +76,8 @@ class LoraUtil:
             self.write_int(src_address)
             self.write_int(dst_address)
             self.write_int(self.linecounter)
-            self.write_int(len(outGoing))
-            self.lora.write(outGoing)
+            self.write_int(len(outgoing_payload))
+            self.lora.write(outgoing_payload)
             self.lora.endPacket()
             slt = 0
             while (not self.done_transmit) and (slt < 50):
@@ -90,7 +90,6 @@ class LoraUtil:
 
     def is_packet_available(self):
         "Indicates whether a packet is available; use read_packet() to get it."
-        # Convert to bool result from None or True
         return bool(self.packet)
 
     def read_packet(self):
