@@ -11,12 +11,16 @@ class LoraPacket:
         self.dst_address = None
         self.src_line_count = None
         self.pay_length = None
-        self.msg_txt = None
+        self.msg = None
         self.rssi = None
         self.snr = None
 
+    @property
+    def msg_txt(self):
+        return self.msg.decode('utf-8', 'ignore')
+
     def clear(self):
-        self.msg_txt = ''
+        self.msg = b''
 
 class LoraUtil:
     '''a LoraUtil object has an sx1276 and it can send and receive LoRa packets
@@ -51,11 +55,7 @@ class LoraUtil:
             pkt.pay_length = pay[3]
             pkt.rssi = sx12.packetRssi()
             pkt.snr = sx12.packetSnr()
-            try:
-                pkt.msg_txt = pay[4:].decode('utf-8', 'ignore')
-            except Exception as ex:
-                print("_do_receive error: ")
-                print(ex)
+            pkt.msg = pay[4:]  # Slice creates a new bytes object.
             self.packet = pkt
 
     def _do_transmit(self):

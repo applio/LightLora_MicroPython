@@ -95,16 +95,16 @@ class SX127x:
     ''' Standard SX127x library. Requires an spicontrol.SpiControl instance for spiControl '''
     def __init__(self,
                  name='SX127x',
-                 onReceive=None,
-                 onTransmit=None,
+                 on_receive_func=None,
+                 on_transmit_func=None,
                  spiControl=None,
                  **kwargs):
 
         self.name = name
         self.parameters = dict(DEFAULT_PARAMETERS)
         self.parameters.update(kwargs)
-        self._onReceive = onReceive  # the onreceive function
-        self._onTransmit = onTransmit   # the ontransmit function
+        self._onReceive = on_receive_func
+        self._onTransmit = on_transmit_func
         self.doAcquire = hasattr(_thread, 'allocate_lock') # micropython vs loboris
         if self.doAcquire :
             self._lock = _thread.allocate_lock()
@@ -159,7 +159,7 @@ class SX127x:
     # finished putting packet into fifo, send it
     # non-blocking so don't immediately receive...
     def endPacket(self):
-        ''' non-blocking end packet '''
+        "Non-blocking end packet"
         if self._onTransmit:
            # enable tx to raise DIO0
             self._prepIrqHandler(self._handleOnTransmit)           # attach handler
@@ -170,7 +170,7 @@ class SX127x:
         self.writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_TX)
 
     def isTxDone(self):
-        ''' if Tx is done return true, and clear irq register - so it only returns true once '''
+        "If Tx is done return True, and clear irq register - so it only returns True once"
         if self._onTransmit:
             print("Do not call isTxDone with transmit interrupts enabled. Use the callback.")
             return False
@@ -216,7 +216,7 @@ class SX127x:
         self.acquire_lock(False) # unlock when done writing
 
     def getIrqFlags(self):
-        ''' get and reset the irq register '''
+        "Get and reset the irq register"
         irqFlags = self.readRegister(REG_IRQ_FLAGS)
         self.writeRegister(REG_IRQ_FLAGS, irqFlags)
         return irqFlags
@@ -269,7 +269,7 @@ class SX127x:
         self.writeRegister(REG_MODEM_CONFIG_1, (self.readRegister(REG_MODEM_CONFIG_1) & 0x0f) | (bw << 4))
 
     def setCodingRate(self, denominator):
-        ''' this takes a value of 5..8 as the denominator of 4/5, 4/6, 4/7, 5/8 '''
+        "Takes a value of 5..8 as the denominator of 4/5, 4/6, 4/7, 5/8"
         denominator = min(max(denominator, 5), 8)
         cr = denominator - 4
         self.writeRegister(REG_MODEM_CONFIG_1, (self.readRegister(REG_MODEM_CONFIG_1) & 0xf1) | (cr << 1))
@@ -298,7 +298,7 @@ class SX127x:
             self.writeRegister(REG_MODEM_CONFIG_1, config)
 
     def _prepIrqHandler(self, handlefn):
-        ''' attach the handler to the irq pin, disable if None '''
+        "Attach the handler to the irq pin, disable if None"
         if self.irqPin:
             if handlefn:
                 self.irqPin.irq(handler=handlefn, trigger=Pin.IRQ_RISING)
@@ -306,16 +306,16 @@ class SX127x:
                 self.irqPin.irq(handler=None, trigger=0)
 
     def onReceive(self, callback):
-        ''' establish a callback function for receive interrupts'''
+        "Establish a callback function for receive interrupts"
         self._onReceive = callback
         self._prepIrqHandler(None) # in case we have one and we're receiving. stop.
 
     def onTransmit(self, callback):
-        ''' establish a callback function for transmit interrupts'''
+        "Establish a callback function for transmit interrupts"
         self._onTransmit = callback
 
     def receive(self, size=0):
-        ''' enable reception - call this when you want to receive stuff '''
+        "Enable reception - call this when you want to receive stuff"
         self.implicitHeaderMode(size > 0)
         if size > 0:
             self.writeRegister(REG_PAYLOAD_LENGTH, size & 0xff)
@@ -352,8 +352,8 @@ class SX127x:
             else:
                 print("no receive method defined")
 
-    # Got a transmit interrupt, handle it
     def _handleOnTransmit(self, event_source):
+        "Got a transmit interrupt, handle it"
         self.acquire_lock(True)           # lock until flags cleared
         irqFlags = self.getIrqFlags()
         if irqFlags & IRQ_TX_DONE_MASK:
@@ -369,7 +369,7 @@ class SX127x:
             print("transmit callback but not txdone: " + str(irqFlags))
 
     def receivedPacket(self, size=0):
-        ''' when no receive handler, this tells if packet ready. Preps for receive'''
+        "When no receive handler, this tells if packet ready. Preps for receive"
         if self._onReceive:
             print("Do not call receivedPacket. Use the callback.")
             return False

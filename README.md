@@ -28,17 +28,16 @@ txt = "Hello World"
 lru.send_packet(0xff, 0x11, txt.encode()) # Conveys src, dst, payload
 ```
 
-The packet instances offer the following attributes:
+Instances of `LoraPacket` offer the following attributes:
 ```python
-class LoraPacket:
-	def __init__(self):
-		self.src_address = None
-		self.dst_address = None
-		self.src_line_count = None
-		self.pay_length = None
-		self.msg_txt = None
-		self.rssi = None
-		self.snr = None
+src_address
+dst_address
+src_line_count
+pay_length
+msg
+msg_txt  # a read-only property, decoded UTF-8 content from msg
+rssi
+snr
 ```
 
 Customization
